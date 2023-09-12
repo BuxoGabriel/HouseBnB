@@ -4,9 +4,16 @@
     "sqlite3": "^5.1.6"
   },
   "scripts": {
-    "dev": "nodemon -w ./"
+    "build": "npx tsc",
+    "start": "node build",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q build\""
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.6.0",
+    "@types/sqlite3": "^3.1.8",
+    "concurrently": "^8.2.1",
+    "nodemon": "^3.0.1",
+    "typescript": "^5.2.2"
   }
 }

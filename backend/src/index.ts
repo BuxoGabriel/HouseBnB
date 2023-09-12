@@ -1,16 +1,17 @@
-const db = require("./persistence")
+import dbI from "./persistence/dbI"
+import SQLiteDB from "./persistence/sqlite"
+
 const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(express.static(__dirname + "/static"))
-
-app.use("/favicon.ico", express.static('/favicon.ico'))
+let db: dbI = new SQLiteDB()
 
 db.init().then(() => {
     app.listen(PORT, () => console.log("listening on port: " + PORT))
-}).catch(err => {
-    console.err(err)
+}).catch((err: any) => {
+    console.error(err)
     process.exit(1)
 })
 
