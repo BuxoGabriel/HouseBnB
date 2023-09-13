@@ -1,4 +1,4 @@
-name: "jest tests"
+name: "CI"
 
 on: 
   push:
@@ -15,6 +15,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 18
-      - run: cd ./backend
-      - run: npm ci
-      - run: npm run test
+      - name: Run Tests Backend
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run test
