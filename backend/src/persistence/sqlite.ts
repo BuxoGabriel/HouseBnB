@@ -5,8 +5,8 @@ import dbI from "./dbI";
 const DB_LOCATION = process.env.DB_LOCATION || '/database/housebnb.db'
 
 export default class SQLiteDB implements dbI {
-    location: string
-    db: any;
+    private location: string
+    private db: any;
     constructor() {
         this.location = DB_LOCATION
         this.db;
