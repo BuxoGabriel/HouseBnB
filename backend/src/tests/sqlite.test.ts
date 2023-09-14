@@ -5,8 +5,11 @@ import * as fs from "fs"
 describe("SQLiteDB", () => {
     const logSpy = jest.spyOn(console, "log")
     const testDBLoc = "/database/housebnb.test.db"
-    if(fs.existsSync(testDBLoc)) fs.writeFileSync(testDBLoc, "")
-    console.log("created new test db")
+    if(fs.existsSync(testDBLoc)) {
+        console.log("testdb already exists!")
+        fs.writeFileSync(testDBLoc, "")
+        console.log("wiped test db!")
+    }
 
     test("initializes and prints", async () => {
         const db = new SQLiteDB()
