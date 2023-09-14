@@ -76,6 +76,7 @@ Messaging:
 - A user can see their message history in each conversation
 
 ## Backend UML
+
 ![backend uml](./diagrams/backenduml.jpeg)
 
 ## Database
@@ -85,12 +86,12 @@ For the database I am using SQLite3 but I want it to be easy to swap out. Howeve
 I first can create tables from what my most basic entities are from my uml
 
 Users(
-    id INT PRIMARY KEY,
-    firstname VARCHAR(32),
-    lastname VARCHAR(32),
-    **email VARCHAR(32)**,
-    username VARCHAR(32),
-    **hashPass VARCHAR(64)**,
+    id INTEGER PRIMARY KEY,
+    firstname VARCHAR(32) NOT NULL,
+    lastname VARCHAR(32) NOT NULL,
+    **email VARCHAR(32) NOT NULL**,
+    username VARCHAR(32) NOT NULL,
+    **password VARCHAR(32) NOT NULL**,
     registerDate DATE)
 
 Houses(
@@ -134,3 +135,5 @@ Reviews(
     text TEXT NOT NULL,
     stars float(1, 2) NOT NULL CHECK (stars >= 0 AND stars <= 5),
     CONSTRAINT REVIEWS_PK PRIMARY KEY (houseId, reviewerId))
+
+I will have to regex check the email, hash the password, and spread the address

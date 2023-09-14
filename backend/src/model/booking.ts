@@ -1,3 +1,5 @@
+import House from "./house"
+
 type Booking = {
     id: number
     bookerId: number
@@ -5,7 +7,8 @@ type Booking = {
     fromDate: Date
     toDate: Date
     confirmed: boolean
-    paid: boolean
+    paid: boolean,
+    house?: House
 }
 
 export default Booking

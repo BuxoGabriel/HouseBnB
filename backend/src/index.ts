@@ -1,19 +1,21 @@
-import dbI from "./persistence/dbI"
+import { UserDao } from "./persistence/daoInterface"
 import SQLiteDB from "./persistence/sqlite"
+import SQLiteUserDao from "./persistence/sqliteUserDao"
 
 const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
-app.use(express.static(__dirname + "/static"))
-let db: dbI = new SQLiteDB()
+let db = new SQLiteDB()
+let userDao: UserDao = new SQLiteUserDao(db)
 
-db.init().then(() => {
-    app.listen(PORT, () => console.log("listening on port: " + PORT))
-}).catch((err: any) => {
-    console.error(err)
-    process.exit(1)
-})
+db.init()
+    .then(() => userDao.init())
+    .then(() => app.listen(PORT, () => console.log("listening on port: " + PORT)))
+    .catch((err) => {
+        console.error(err)
+        process.exit(1)
+    })
 
 function gracefulShutdown() {
     db.teardown()

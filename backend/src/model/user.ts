@@ -1,9 +1,9 @@
 type User = {
-    id: number,
+    id: number | undefined,
     firstName: string,
     lastName: string,
-    userName: string,
-    hashPass: string,
+    username: string,
+    password: string | undefined,
     email: string,
     registerDate: Date
 }
