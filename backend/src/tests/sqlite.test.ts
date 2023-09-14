@@ -4,8 +4,8 @@ import * as fs from "fs"
 
 describe("SQLiteDB", () => {
     const logSpy = jest.spyOn(console, "log")
-    const testdb = fs.openSync("/database/housebnb.test.db", "w+")
-    fs.writeFileSync(testdb, "")
+    const testDBLoc = "/database/housebnb.test.db"
+    if(fs.existsSync(testDBLoc)) fs.writeFileSync(testDBLoc, "")
     console.log("created new test db")
 
     test("initializes and prints", async () => {
