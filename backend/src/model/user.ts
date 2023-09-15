@@ -1,7 +1,7 @@
 type User = {
     id: number | undefined,
-    firstName: string,
-    lastName: string,
+    firstname: string,
+    lastname: string,
     username: string,
     password: string | undefined,
     email: string,

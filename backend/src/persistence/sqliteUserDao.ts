@@ -36,7 +36,7 @@ export default class SQLiteUserDao implements UserDao {
     createUser(user: User): Promise<User> {
         return new Promise((res, rej) => {
             this.sqlDB.run("INSERT INTO Users(firstname, lastname, email, username, password, registerDate) VALUES (?, ?, ?, ?, ?, ?);", 
-                [user.firstName, user.lastName, user.email, user.username, user.password, user.registerDate])
+                [user.firstname, user.lastname, user.email, user.username, user.password, user.registerDate])
                 .then(runRes => {
                     user.id = runRes.lastID
                     res(user)
@@ -47,8 +47,8 @@ export default class SQLiteUserDao implements UserDao {
 
     updateUser(newUser: User): Promise<User> {
         return new Promise((res, rej) => {
-            this.sqlDB.run("UPDATE Users SET firstname = ?, lastname = ?, email = ?, username = ?, password = ? WHERE, id = ?;",
-                [newUser.firstName, newUser.lastName, newUser.email, newUser.username, newUser.password, newUser.id])
+            this.sqlDB.run("UPDATE Users SET firstname = ?, lastname = ?, email = ?, username = ?, password = ? WHERE id = ?;",
+                [newUser.firstname, newUser.lastname, newUser.email, newUser.username, newUser.password, newUser.id])
                 .then(val => res(newUser))
                 .catch(err => rej(err))
         })
@@ -56,8 +56,8 @@ export default class SQLiteUserDao implements UserDao {
 
     verify(username: string, password: string): Promise<boolean> {
         return new Promise((res, rej) => {
-            this.sqlDB.get("SELECT COUNT(*) FROM Users WHERE username = ? AND password = ?", [username, password])
-                .then(val => val? res(true): res(false))
+            this.sqlDB.get<{count: number}>("SELECT COUNT(*) as count FROM Users WHERE username = ? AND password = ?", [username, password])
+                .then(val => val && val.count > 0? res(true): res(false))
                 .catch(err => rej(err))
         })
     }

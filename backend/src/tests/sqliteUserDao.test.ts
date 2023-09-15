@@ -25,8 +25,8 @@ describe("SQLiteUserDao", () => {
     describe('functions', () => {
         const userDao = new SQLiteUserDao(db)
         const billy: User = {
-            firstName: "Billy",
-            lastName: "Bob",
+            firstname: "Billy",
+            lastname: "Bob",
             username: "user1",
             email: "billybob@mail.com",
             password: "password",
@@ -36,7 +36,7 @@ describe("SQLiteUserDao", () => {
         beforeEach(async () => {
             await userDao.init()
             await expect(db.run("INSERT INTO Users(id, firstname, lastname, email, username, password, registerDate) VALUES (?, ?, ?, ?, ?, ?, ?);",
-                [billy.id, billy.firstName, billy.lastName, billy.email, billy.username, billy.password, billy.registerDate])).resolves.toHaveProperty("changes", 1)
+                [billy.id, billy.firstname, billy.lastname, billy.email, billy.username, billy.password, billy.registerDate])).resolves.toHaveProperty("changes", 1)
         })
         afterEach(async () => {
             await expect(db.run("DELETE FROM Users WHERE id = 0", [])).resolves.toHaveProperty("changes", 1)
@@ -51,8 +51,8 @@ describe("SQLiteUserDao", () => {
 
         test("createUser", async () => {
             let joe: User = {
-                firstName: "Joe",
-                lastName: "Smith",
+                firstname: "Joe",
+                lastname: "Smith",
                 username: "user2",
                 email: "joe@mail.com",
                 password: "password",
@@ -67,8 +67,8 @@ describe("SQLiteUserDao", () => {
 
         test("createDupUsername", async () => {
             let joe: User = {
-                firstName: "Joseph",
-                lastName: "Smithson",
+                firstname: "Joseph",
+                lastname: "Smithson",
                 username: "user2",
                 email: "joeseph@mail.com",
                 password: "password",
@@ -80,9 +80,9 @@ describe("SQLiteUserDao", () => {
 
         test("createDupEmail", async () => {
             let joe: User = {
-                firstName: "Josephine",
-                lastName: "Smithsonian",
-                username: "user21",
+                firstname: "Josephine",
+                lastname: "Smithsonian",
+                username: "user3",
                 email: "joe@mail.com",
                 password: "password",
                 registerDate: new Date(),
@@ -90,6 +90,38 @@ describe("SQLiteUserDao", () => {
             }
             await expect(userDao.createUser(joe)).rejects.toThrowError()
             
+        })
+
+        test("updateUser", async () => {
+            let b = await userDao.getUser(billy.id!)
+            expect(b).not.toBeUndefined()
+            b!.firstname = "billium"
+            b!.password = "secret"
+            await expect(userDao.updateUser(b!)).resolves.toHaveProperty("password", "secret")
+            b = await userDao.getUser(b!.id!)
+            expect(b).toHaveProperty("firstname", "billium")
+        })
+
+        test("updateUserInvalid", async () => {
+            // user2 with email joe@mail.com already exists so updating billy like this should break the unique properties
+            let joe: User = {
+                firstname: "Joe",
+                lastname: "Smith",
+                username: "user2",
+                email: "joe@mail.com",
+                password: "password",
+                registerDate: new Date(),
+                id: billy.id
+            }
+            await expect(userDao.updateUser(joe)).rejects.toThrowError()
+        })
+
+        test("verify success", async () => {
+            await expect(userDao.verify(billy.username, billy.password!)).resolves.toBe(true)
+        })
+        
+        test("verify unsuccessfull", async () => {
+            await expect(userDao.verify("", "")).resolves.toBe(false)
         })
     })
 })
