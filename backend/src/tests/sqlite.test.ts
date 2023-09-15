@@ -35,16 +35,20 @@ describe("SQLiteDB", () => {
 
     describe("functions", () => {
         const db = new SQLiteDB()
-        beforeEach(async () => await db.init())
-        beforeEach(async ()=> await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", []))
-        beforeEach(async ()=> await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["Gabriel", "Buxo"]))
-        beforeEach(async ()=> await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["John", "Doe"]))
-        afterEach(async () => await db.run("DROP TABLE People", []))
-        afterEach(async () => await db.teardown())
+        beforeEach(async ()=> {
+            await db.init()
+            await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", [])
+            await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["Gabriel", "Buxo"])
+            await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["John", "Doe"])
+        })
+        afterEach(async () => {
+            await db.run("DROP TABLE People", [])
+            await db.teardown()
+        })
 
         test("run", async () => {
-            await expect(db.run("Insert INTO People(firstname, lastname) VALUES(?, ?);", ["Joe", "Shmoe"])).resolves.toBe(undefined)
-            await expect(db.run("DELETE FROM People WHERE firstname = ?;", ["Joe"])).resolves.toBe(undefined)
+            await expect(db.run("Insert INTO People(firstname, lastname) VALUES(?, ?);", ["Joe", "Shmoe"])).resolves.toHaveProperty("changes", 1)
+            await expect(db.run("DELETE FROM People WHERE firstname = ?;", ["Joe"])).resolves.toHaveProperty("changes", 1)
         })
 
         test("run bad sql", async () => {
@@ -57,16 +61,27 @@ describe("SQLiteDB", () => {
             expect(schema).toHaveProperty("lastname")
         })
 
+        test("get non-existant", async () => {
+            let schema = await db.get("SELECT * FROM People WHERE firstname = ?", ["Billy"])
+            expect(schema).toBe(undefined)
+        })
+
         test("get bad sql", async () => {
             await expect(db.get("SELECT m:l * ;", [])).rejects.toThrowError()
         })
 
         test("getAll", async () => {
-            let rows = await db.getAll("SELECT * FROM People", [])
-            expect(rows[0]).toHaveProperty("firstname", "Gabriel")
-            expect(rows[0]).toHaveProperty("lastname", "Buxo")
-            expect(rows[1]).toHaveProperty("firstname", "John")
-            expect(rows[1]).toHaveProperty("lastname", "Doe")
+            let rows = await db.getAll("SELECT * FROM People;", [])
+            expect(rows).not.toBe(undefined)
+            expect(rows![0]).toHaveProperty("firstname", "Gabriel")
+            expect(rows![0]).toHaveProperty("lastname", "Buxo")
+            expect(rows![1]).toHaveProperty("firstname", "John")
+            expect(rows![1]).toHaveProperty("lastname", "Doe")
+        })
+
+        test("getAll non-existant", async () => {
+            let rows = await db.getAll("SELECT * FROM People WHERE lastname = ?;", ["Smith"])
+            expect(rows).toStrictEqual([])
         })
 
         test("getAll bad sql", async () => {

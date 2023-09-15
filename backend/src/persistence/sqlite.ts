@@ -1,4 +1,4 @@
-import sqlite3, { Database } from "sqlite3"
+import sqlite3, { Database, RunResult } from "sqlite3"
 import fs from "fs"
 import { dbI } from "./daoInterface";
 
@@ -43,17 +43,17 @@ export default class SQLiteDB implements dbI {
         })
     }
 
-    run(query: string, params: any): Promise<void> {
+    run(query: string, params: any): Promise<RunResult> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
-            this.db.run(query, params, (err) => {
+            this.db.run(query, params, function (err) {
                 if (err) return rej(err)
-                else res()
+                else res(this)
             })
         })
     }
 
-    get<T>(query: string, params: any): Promise<T> {
+    get<T>(query: string, params: any): Promise<T | undefined> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
             this.db.get(query, params, (err, row: T) => {
@@ -63,7 +63,7 @@ export default class SQLiteDB implements dbI {
         })
     }
 
-    getAll<T>(query: string, params: any): Promise<T[]> {
+    getAll<T>(query: string, params: any): Promise<T[] | undefined> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
             this.db.all(query, params, (err, rows: T[]) => {
