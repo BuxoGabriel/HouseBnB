@@ -2,12 +2,25 @@ import User from "../model/user";
 import { UserDao } from "./daoInterface";
 import SQLiteDB from "./sqlite";
 
+/**
+ * SQLiteUserDao built to provide user interaction abstraction on top of SQLiteDB class
+ */
 export default class SQLiteUserDao implements UserDao {
+    // The db that is interfaced with
     private sqlDB: SQLiteDB
+
+    /**
+     * Initializes the SQLiteUserDao object
+     * 
+     * @param {SQLiteDB} db the database that the userdao will interface with. Expects this db to already be initialized with .init() 
+     */
     constructor(db: SQLiteDB) {
         this.sqlDB = db
     }
 
+    /**
+     * @inheritdoc 
+     */
     init(): Promise<void> {
         return new Promise((res, rej) => {
             this.sqlDB.run(
@@ -29,10 +42,16 @@ export default class SQLiteUserDao implements UserDao {
         })
     }
 
+    /**
+     * @inheritdoc
+     */
     getUser(id: number): Promise<User | undefined> {
         return this.sqlDB.get("SELECT * FROM Users WHERE id = ?;", [id])
     }
 
+    /**
+     * @inheritdoc
+     */
     createUser(user: User): Promise<User> {
         return new Promise((res, rej) => {
             this.sqlDB.run("INSERT INTO Users(firstname, lastname, email, username, password, registerDate) VALUES (?, ?, ?, ?, ?, ?);", 
@@ -45,6 +64,9 @@ export default class SQLiteUserDao implements UserDao {
         })
     }
 
+    /**
+     * @inheritdoc
+     */
     updateUser(newUser: User): Promise<User> {
         return new Promise((res, rej) => {
             this.sqlDB.run("UPDATE Users SET firstname = ?, lastname = ?, email = ?, username = ?, password = ? WHERE id = ?;",
@@ -54,6 +76,9 @@ export default class SQLiteUserDao implements UserDao {
         })
     }
 
+    /**
+     * @inheritdoc
+     */
     verify(username: string, password: string): Promise<boolean> {
         return new Promise((res, rej) => {
             this.sqlDB.get<{count: number}>("SELECT COUNT(*) as count FROM Users WHERE username = ? AND password = ?", [username, password])

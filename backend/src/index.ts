@@ -6,6 +6,7 @@ const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 3000
 
+// set up DAO
 let db = new SQLiteDB()
 let userDao: UserDao = new SQLiteUserDao(db)
 
@@ -17,6 +18,9 @@ db.init()
         process.exit(1)
     })
 
+/**
+ * closes the db connection as expected
+ */
 function gracefulShutdown() {
     db.teardown()
         .catch(() => { })

@@ -2,16 +2,29 @@ import sqlite3, { Database, RunResult } from "sqlite3"
 import fs from "fs"
 import { dbI } from "./daoInterface";
 
+// Set database based on runtime enviroment to prevent data contamination
 const DB_LOCATION = process.env.NODE_ENV == 'test'? '/database/housebnb.test.db': process.env.DB_LOCATION || '/database/housebnb.db'
 
+/**
+ * SQLiteDB sets up and wraps the sqlite3 Database to match the dbI interface
+ */
 export default class SQLiteDB implements dbI {
+    // The location of the database
     private location: string
+    // sqlite3 Databsae
     private db?: Database;
+    /**
+     * Initializes SQLiteDB object but does not initialize the database.
+     * For that call this.init() and await
+     */
     constructor() {
         this.location = DB_LOCATION
         this.db;
     }
 
+    /**
+     * @inheritdoc
+     */
     init(): Promise<void> {
         return new Promise((res, rej) => {
             if (this.db) return rej(new Error("Database already exists"))
@@ -30,6 +43,9 @@ export default class SQLiteDB implements dbI {
         })
     }
 
+    /**
+     * @inheritdoc
+     */
     teardown(): Promise<void> {
         return new Promise((res, rej) => {
             if (!this.db) return rej(new Error("Database does not exist"))
@@ -43,16 +59,35 @@ export default class SQLiteDB implements dbI {
         })
     }
 
-    run(query: string, params: any): Promise<RunResult> {
+    /**
+     * Runs a sql command in the database
+     * 
+     * @param {string} command the command that you would like to run.
+     * Replace any interpoated values with question marks and then supply interpolated values in order in the params array.
+     * @param {string} params the values that you would like to interpolate into your command.
+     * @returns {Promise<RunResult>} A promise that resolves to the runresult of the sql command
+     * or rejects to an error if there is an issue with the sql command.
+     */
+    run(command: string, params: any): Promise<RunResult> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
-            this.db.run(query, params, function (err) {
+            this.db.run(command, params, function (err) {
                 if (err) return rej(err)
                 else res(this)
             })
         })
     }
 
+    /**
+     * Gets the top result of a database query
+     * 
+     * @param {string} query the query that you would like to search for in the database
+     * Replace any interpoated values with question marks and then supply interpolated values in order in the params array
+     * @param {string} params the values that you would like to interpolate into your command.
+     * @returns {Promise} a promise that resolves to the top result in the query.
+     * This is in the form of an object with a key for each column of the table.
+     * Also can reject with an error if it is provided invalid sql.
+     */
     get<T>(query: string, params: any): Promise<T | undefined> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
@@ -63,6 +98,16 @@ export default class SQLiteDB implements dbI {
         })
     }
 
+    /**
+     * Gets all results from a database query in an array
+     * 
+     * @param {string} query the query that you would like to search for in the database
+     * Replace any interpoated values with question marks and then supply interpolated values in order in the params array
+     * @param {string} params the values that you would like to interpolate into your command.
+     * @returns {Promise} a promise that resolves to the an array of results from the query.
+     * Each result is in the form of an object with a key for each column of the table.
+     * Also can reject with an error if it is provided invalid sql.
+     */
     getAll<T>(query: string, params: any): Promise<T[] | undefined> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
