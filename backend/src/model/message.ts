@@ -1,4 +1,7 @@
-type Messege = {
+type Message = {
+    id: number,
+    //conversation id
+    cid: number,
     fromId: number,
     toId: number,
     text: string,
@@ -6,4 +9,4 @@ type Messege = {
     timeSent: Date
 }
 
-export default Messege
+export default Message

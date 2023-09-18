@@ -1,6 +1,7 @@
 import Booking from "../model/booking"
+import Conversation from "../model/conversation"
 import House from "../model/house"
-import Messege from "../model/messege"
+import Message from "../model/message"
 import Review from "../model/review"
 import User from "../model/user"
 
@@ -26,7 +27,7 @@ export interface dbI {
 }
 
 /**
- * The interface for abstracting interacting with user data.
+ * The interface for abstracting interacting with SQLite user data.
  */
 export interface UserDao {
     /**
@@ -57,7 +58,7 @@ export interface UserDao {
      * Updates a user to have new information
      * 
      * @param {User} newUser A user with the id of the user that you are trying to change and the username, password, email, firstname, and lastname
-     * @returns {Promise<User>} A Promise the resolves to the updated user information or rejects to an Error if one is encountered
+     * @returns {Promise<User>} A Promise the resolves to the updated user information or rejects to an Error if one is encountered(including if uid not found)
      */
     updateUser(newUser: User): Promise<User>
 
@@ -72,12 +73,90 @@ export interface UserDao {
     verify(username: string, password: string): Promise<boolean>
 }
 
-export interface MessegeDao {
+/**
+ * An interface abstracting interfacing with message data
+ */
+export interface MessageDao {
+    /**
+     * Initializes Messages Table
+     * 
+     * @returns {Promise<void>} A promise that resolves when the messages table is done initializing
+     */
     init(): Promise<void>
-    getConversation(fromId: number, toId: number): Promise<Messege[] | undefined>
-    createMessege(text: string, timeSent: Date): Promise<Messege>
-    editMessege(newMessege: Messege): Promise<Messege>
-    hideMessege(id: number): Promise<Messege>
+
+    /**
+     * Creates a conversation between 2 people(or returns a conversation if it already) and is a prerequisit for sending a message
+     * 
+     * @param {number} iid the id of the inquiring user 
+     * @param {number} houseid the id of the house that the user is inquiring about
+     * @returns {Promise<Conversation>} A promise that resolves to a conversation if successfull.
+     * Otherwise, rejects to an Error
+     */
+    createConversation(iid: number, houseid: number): Promise<Conversation>
+
+    /**
+     * deletes a conversation and all messages sent within it from the database
+     * 
+     * @param {number} cid the id of the conversation that you would like to delete
+     * @returns A promise if it is successfull or rejects to an error if an unexpected error occurs
+     */
+    deleteConversation(cid: number): Promise<void>
+
+    /**
+     * Gets 20 messages in a conversation by its id. Returns less if there is less that 20 messages.
+     * 
+     * @param {number} cid the id of the conversation you would like to fetch
+     * @param {number} page 0 indexed what group of 20 messages you would like from newest to oldest
+     * @returns {Promise<Message[] | undefined>} a promise that resolves to an array of 20 messages from the database
+     * or undefined if there is no conversation with the provided cid or rejects with an error if an unexpected error is encountered
+     */
+    getConversation(cid: number, page: number): Promise<Message[] | undefined>
+
+    /**
+     * Gets all conversations that a user is engaged in sorted by last message date
+     * 
+     * @param {number} uid the id of the inquiring user
+     * @returns {Promise<Conversation[] | undefined>} a promise that resolves to an array of conversations or undefined if the user is not
+     * engaged in any conversations. Also rejects to an error if an unexpected error is encountered
+     */
+    getUserConversations(uid: number): Promise<Conversation[] | undefined>
+
+    /**
+     * Gets all conversations that have been started by users inquiring about you as a host sorted by last message date
+     * 
+     * @param {number} hostid the id of the host looking for conversations
+     * @returns {Promise<Conversation[] | undefined>} a promise that resolves to an array of conversations or undefined if the host has no inquirers
+     */
+    getHostConversations(hostid: number): Promise<Conversation[] | undefined>
+    
+    /**
+     * Sends a messege from one user to another without checking if a conversation exists first. Generates the time of sending inside before storage.
+     * 
+     * @param {number} fromId the sender's id
+     * @param {number} toId the reciever's id
+     * @param {string} text the contents of the message
+     * @returns A promise that resolves to the sent message if it is successfull and rejects to an error if it is not
+     */
+    createMessage(fromId: number, toId: boolean, text: string): Promise<Message>
+
+    /**
+     * Edits the contents of a messege.
+     * 
+     * @param {number} mid the id of the message that you would like to change
+     * @param {string} newText the updated text of the message 
+     * @returns A promise that resolves to the updated message on success.
+     * Also resolves to undefined if the message can not be found or rejects to an error if an unexpected error occurs
+     */
+    editMessage(mid: number, newText: string): Promise<Message | undefined>
+
+    /**
+     * Hides a message from both parties in the conversation
+     * 
+     * @param {number} mid the id of the message that you would like to hide
+     * @returns A promise that resolves to the updated message on success.
+     * Also resolves to undefined if the message can not be found or rejects to an error if an unexpected error occurs
+     */
+    hideMessege(mid: number): Promise<Message | undefined>
 }
 
 export interface BookingDao {

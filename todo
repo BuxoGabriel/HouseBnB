@@ -5,6 +5,8 @@
 - Make User API Route
 - Create DB
 - Work on Dao
+- Change DAO paradigm to not pass in the relevent object whenever possible and to instead have descriptive fields.
+- Change DAO paradigm to return undefined on updates if it can not find the original item
 
 ## Frontend
 
