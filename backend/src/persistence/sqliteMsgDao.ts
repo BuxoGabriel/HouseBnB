@@ -22,19 +22,24 @@ export default class SQLiteMessageDao implements MessageDao {
         return new Promise((res, rej) => {
             this.db.run(`CREATE TABLE IF NOT EXISTS Conversations(
                 id INTEGER PRIMARY KEY NOT NULL,
-                iid INTEGER NOT NULL FOREIGN KEY REFERENCES Users(id),
-                hid INTEGER NOT NULL FOREIGN KEY REFERENCES Users(id),
-                created DATE NOT NULL DEFAULT (DATETIME('now'))
+                iid INTEGER NOT NULL,
+                hid INTEGER NOT NULL,
+                created DATE NOT NULL DEFAULT (DATETIME('now')),
+                FOREIGN KEY(iid) REFERENCES Users(id) ON DELETE CASCADE,
+                FOREIGN KEY(hid) REFERENCES Users(id) ON DELETE CASCADE
                 );`, [])
                 .then(val => {
                     return this.db.run(`CREATE TABLE IF NOT EXISTS Messeges(
                         id INTEGER PRIMARY KEY NOT NULL,
-                        cid INTEGER NOT NULL FOREIGN KEY REFERENCES Conversations(id) ON DELETE CASCADE,
-                        fromid INTEGER NOT NULL FOREIGN KEY REFERENCES Users(id),
-                        toid INTEGER NOT NULL FOREIGN KEY REFERENCES Users(id),
+                        cid INTEGER NOT NULL,
+                        fromid INTEGER NOT NULL,
+                        toid INTEGER NOT NULL,
                         visible INTEGER NOT NULL DEFAULT TRUE,
                         created DATE NOT NULL DEFAULT (DATETIME('now')),
-                        text TEXT NOT NULL
+                        text TEXT NOT NULL,
+                        FOREIGN KEY(cid) REFERENCES Conversations(id) ON DELETE CASCADE,
+                        FOREIGN KEY(fromid) REFERENCES Users(id),
+                        FOREIGN KEY(toid) REFERENCES Users(id)
                         );`, [])
                 })
                 .then(val => res())
