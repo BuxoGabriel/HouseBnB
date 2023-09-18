@@ -1,12 +1,12 @@
 type Message = {
-    id: number,
+    id?: number,
     //conversation id
     cid: number,
-    fromId: number,
-    toId: number,
+    fromid: number,
+    toid: number,
     text: string,
-    visible: boolean,
-    timeSent: Date
+    visible?: boolean,
+    timesent?: Date
 }
 
 export default Message

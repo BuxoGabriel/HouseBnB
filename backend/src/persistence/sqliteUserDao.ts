@@ -25,7 +25,7 @@ export default class SQLiteUserDao implements UserDao {
         return new Promise((res, rej) => {
             this.sqlDB.run(
                 `CREATE TABLE IF NOT EXISTS Users(
-                    id INTEGER PRIMARY KEY,
+                    id INTEGER NOT NULL PRIMARY KEY,
                     firstname VARCHAR(32) NOT NULL,
                     lastname VARCHAR(32) NOT NULL,
                     email VARCHAR(32) UNIQUE NOT NULL,

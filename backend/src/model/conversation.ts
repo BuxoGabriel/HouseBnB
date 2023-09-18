@@ -2,10 +2,9 @@ type Conversation = {
     id: number,
     // inquirer id
     iid: number,
-    hostId: number
+    // host id
+    hid: number
     created: Date
-    // date that last message was sent in this convo
-    lastMsg: Date
 }
 
 export default Conversation

@@ -88,11 +88,11 @@ export interface MessageDao {
      * Creates a conversation between 2 people(or returns a conversation if it already) and is a prerequisit for sending a message
      * 
      * @param {number} iid the id of the inquiring user 
-     * @param {number} houseid the id of the house that the user is inquiring about
+     * @param {number} hid the id of the host that the user is inquiring about
      * @returns {Promise<Conversation>} A promise that resolves to a conversation if successfull.
      * Otherwise, rejects to an Error
      */
-    createConversation(iid: number, houseid: number): Promise<Conversation>
+    createConversation(iid: number, hid: number): Promise<Conversation>
 
     /**
      * deletes a conversation and all messages sent within it from the database
@@ -132,12 +132,13 @@ export interface MessageDao {
     /**
      * Sends a messege from one user to another without checking if a conversation exists first. Generates the time of sending inside before storage.
      * 
-     * @param {number} fromId the sender's id
-     * @param {number} toId the reciever's id
+     * @param {number} cid the conversation id
+     * @param {number} fromid the sender's id
+     * @param {number} toid the reciever's id
      * @param {string} text the contents of the message
      * @returns A promise that resolves to the sent message if it is successfull and rejects to an error if it is not
      */
-    createMessage(fromId: number, toId: boolean, text: string): Promise<Message>
+    createMessage(cid: number, fromid: number, toid: number, text: string): Promise<Message>
 
     /**
      * Edits the contents of a messege.
