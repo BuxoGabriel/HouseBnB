@@ -79,6 +79,22 @@ export default class SQLiteUserDao implements UserDao {
     /**
      * @inheritdoc
      */
+    deleteUser(id: number): Promise<User | undefined> {
+      return new Promise((res, rej) => {
+        this.sqlDB.get<User>("SELECT * FROM Users WHERE id = ?", [id])
+            .then(user => {
+                if(!user) return res(undefined)
+                return this.sqlDB.run("DELETE FROM Users WHERE id = ?", [id])
+                    .then(val => res(user))
+                    .catch(err => rej(err))
+            })
+            .catch(err => rej(err))
+      })  
+    }
+
+    /**
+     * @inheritdoc
+     */
     verify(username: string, password: string): Promise<boolean> {
         return new Promise((res, rej) => {
             this.sqlDB.get<{count: number}>("SELECT COUNT(*) as count FROM Users WHERE username = ? AND password = ?", [username, password])

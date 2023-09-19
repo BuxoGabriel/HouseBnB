@@ -61,6 +61,17 @@ export interface UserDao {
      * @returns {Promise<User>} A Promise the resolves to the updated user information or rejects to an Error if one is encountered(including if uid not found)
      */
     updateUser(newUser: User): Promise<User>
+    
+    /**
+     * Deletes a user from the database.
+     * 
+     * BEWARE: THIS CASCADES INTO THEIR CONVERSATIONS AND MESSAGES
+     * 
+     * @param {number} id the id of the user that you would like to delete
+     * @returns {Promise<User | undefined>} A promise that resolves to the deleted user on success.
+     * If the user can not be found it resolves to undefined instead, and something fails it rejects to an error instead.
+     */
+    deleteUser(id: number): Promise<User | undefined>
 
     /**
      * Verifies that a username and password is in the database

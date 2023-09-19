@@ -1,4 +1,3 @@
-import { RunResult } from "sqlite3";
 import Conversation from "../model/conversation";
 import Message from "../model/message";
 import { MessageDao } from "./daoInterface";
@@ -29,7 +28,7 @@ export default class SQLiteMessageDao implements MessageDao {
                 FOREIGN KEY(hid) REFERENCES Users(id) ON DELETE CASCADE
                 );`, [])
                 .then(val => {
-                    return this.db.run(`CREATE TABLE IF NOT EXISTS Messeges(
+                    return this.db.run(`CREATE TABLE IF NOT EXISTS Messages(
                         id INTEGER PRIMARY KEY NOT NULL,
                         cid INTEGER NOT NULL,
                         fromid INTEGER NOT NULL,

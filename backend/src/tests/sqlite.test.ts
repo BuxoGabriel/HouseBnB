@@ -35,16 +35,15 @@ describe("SQLiteDB", () => {
 
     describe("functions", () => {
         const db = new SQLiteDB()
-        beforeEach(async ()=> {
-            await db.init()
+        beforeAll(async () => await db.init())
+        beforeEach(async () => {
             await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", [])
             await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["Gabriel", "Buxo"])
             await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["John", "Doe"])
         })
-        afterEach(async () => {
-            await db.run("DROP TABLE People", [])
-            await db.teardown()
-        })
+        
+        afterEach(async () => await db.run("DROP TABLE People", []))
+        afterAll(async () => await db.teardown())
 
         test("run", async () => {
             await expect(db.run("Insert INTO People(firstname, lastname) VALUES(?, ?);", ["Joe", "Shmoe"])).resolves.toHaveProperty("changes", 1)

@@ -13,8 +13,8 @@ describe("SQLiteUserDao", () => {
     }
     const db = new SQLiteDB()
 
-    beforeEach(async () => await db.init())
-    afterEach(async () => await db.teardown())
+    beforeAll(async () => await db.init())
+    afterAll(async () => await db.teardown())
 
 
     test("init", async () => {
@@ -89,7 +89,6 @@ describe("SQLiteUserDao", () => {
                 id: undefined
             }
             await expect(userDao.createUser(joe)).rejects.toThrowError()
-            
         })
 
         test("updateUser", async () => {
@@ -116,10 +115,24 @@ describe("SQLiteUserDao", () => {
             await expect(userDao.updateUser(joe)).rejects.toThrowError()
         })
 
+        test("deleteUser", async () => {
+            let josh: User = {
+                firstname: "Josh",
+                lastname: "Smith",
+                username: "user3",
+                email: "josh@mail.com",
+                password: "password",
+                registerDate: new Date(),
+                id: undefined
+            }
+            josh = await userDao.createUser(josh)
+            await expect(userDao.deleteUser(josh.id!)).resolves.toHaveProperty("id", josh.id)
+        })
+
         test("verify success", async () => {
             await expect(userDao.verify(billy.username, billy.password!)).resolves.toBe(true)
         })
-        
+
         test("verify unsuccessfull", async () => {
             await expect(userDao.verify("", "")).resolves.toBe(false)
         })
