@@ -1,7 +1,7 @@
 import sqlite3, { Database, RunResult } from "sqlite3"
 import fs from "fs"
 import { dbI } from "./daoInterface";
-import Lock from "../utils/locking";
+import Lock from "@buxogabe/conclock";
 
 // Set database based on runtime enviroment to prevent data contamination
 const DB_LOCATION = process.env.NODE_ENV == 'test' ? '/database/housebnb.test.db' : process.env.DB_LOCATION || '/database/housebnb.db'
