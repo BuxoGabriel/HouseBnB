@@ -4,20 +4,16 @@ import SQLiteMessageDao from "../persistence/sqliteMsgDao"
 import Conversation from "../model/conversation"
 import User from "../model/user"
 import SQLiteUserDao from "../persistence/sqliteUserDao"
-import Message from "../model/message"
 
 describe("SQLiteMsgDao", () => {
     const logSpy = jest.spyOn(console, "log")
-    const testDBLoc = "/database/housebnb.test.db"
-    if (fs.existsSync(testDBLoc)) {
-        console.log("testdb already exists!")
-        fs.writeFileSync(testDBLoc, "")
-        console.log("wiped test db!")
-    }
+
     const db = new SQLiteDB()
 
     beforeAll(async () => await db.init())
     afterAll(async () => await db.teardown())
+    beforeEach(async () => await db.startTransaction())
+    afterEach(async () => await db.rollbackTransaction())
 
     test("init", async () => {
         const msgDao = new SQLiteMessageDao(db)

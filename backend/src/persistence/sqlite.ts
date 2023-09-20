@@ -29,26 +29,26 @@ export default class SQLiteDB implements dbI {
         return new Promise((res, rej) => {
             if (this.db) return rej(new Error("Database already exists"))
 
-                const dirName = require('path').dirname(this.location)
-                if (!fs.existsSync(dirName)) {
-                    console.log("database file does not exist, creating...")
-                    fs.mkdirSync(dirName, { recursive: true })
-                }
-
-                this.db = new sqlite3.Database(this.location, (err) => {
-                    if (err) return rej(err)
-                    console.log("database initialized!")
-                    res()
-                })
-            })
+            const dirName = require('path').dirname(this.location)
+            if (!fs.existsSync(dirName)) {
+                console.log("database file does not exist, creating...")
+                fs.mkdirSync(dirName, { recursive: true })
             }
+
+            this.db = new sqlite3.Database(this.location, (err) => {
+                if (err) return rej(err)
+                console.log("database initialized!")
+                res()
+            })
+        })
+    }
 
     /**
      * @inheritdoc
      */
     teardown(): Promise<void> {
         return new Promise((res, rej) => {
-            if (!this.db) return rej(new Error("Database does not exist"))
+            if (!this.db) return rej(new Error("Database does not exist!"))
             this.db.close((err) => {
                 if (err) return rej(err)
                 else {
@@ -58,6 +58,51 @@ export default class SQLiteDB implements dbI {
             })
         })
     }
+
+    /**
+     * Begins a transaction. This transaction can be completed with commitTransaction or it can be rolled back with rollbackTransaction
+     * @returns A promise that resolves when the method is done setting up the transaction
+     * @throws An error if there is aleady a transaction since they can not be nested
+     */
+    startTransaction(): Promise<void> {
+        return new Promise((res, rej) => {
+            if (!this.db) rej(new Error("Database does not exist!"))
+            this.db!.run("BEGIN TRANSACTION;", (err) => { 
+                if (err) return rej(err)
+                else return res() 
+            })
+        })
+    };
+
+    /**
+     * Rolls back a transaction to how the database was before the transaction. Great if an error occurs or for testing
+     * 
+     * @returns A promise that resolves once the rollback is complete
+     */
+    rollbackTransaction(): Promise<void> {
+        return new Promise((res, rej) => {
+            if (!this.db) rej(new Error("Database does not exist!"))
+            this.db!.run("ROLLBACK TRANSACTION;", (err) => {
+                if(err) return rej(err)
+                else return res()
+            })
+        })
+    };
+
+    /**
+     * Commits/finalizes the transaction. This is not reversable.
+     * 
+     * @returns A promise that resolves once the transaction is done commiting
+     */
+    commitTransaction(): Promise<void> {
+        return new Promise((res, rej) => {
+            if (!this.db) rej(new Error("Database does not exist!"))
+            this.db!.run("COMMIT TRANSACTION;", (err) => {
+                if(err) return rej(err)
+                else return res()
+            })
+        })
+    };
 
     /**
      * Runs a sql command in the database

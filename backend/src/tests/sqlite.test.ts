@@ -4,12 +4,6 @@ import * as fs from "fs"
 
 describe("SQLiteDB", () => {
     const logSpy = jest.spyOn(console, "log")
-    const testDBLoc = "/database/housebnb.test.db"
-        if(fs.existsSync(testDBLoc)) {
-            console.log("testdb already exists!")
-            fs.writeFileSync(testDBLoc, "")
-            console.log("wiped test db!")
-        }
 
     test("initializes and prints", async () => {
         const db = new SQLiteDB()
@@ -37,7 +31,7 @@ describe("SQLiteDB", () => {
         const db = new SQLiteDB()
         beforeAll(async () => await db.init())
         beforeEach(async () => {
-                        await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", [])
+            await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", [])
             await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["Gabriel", "Buxo"])
             await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["John", "Doe"])
         })
@@ -85,6 +79,41 @@ describe("SQLiteDB", () => {
 
         test("getAll bad sql", async () => {
             await expect(db.getAll("SELECT m:l * ;", [])).rejects.toThrowError()
+        })
+
+        test("transaction rollback", async () => {
+            // create transaction
+            await expect(db.startTransaction()).resolves.toBeUndefined()
+            //delete from transaction
+            await expect(db.run("DELETE FROM People WHERE firstname = ?;", ["John"])).resolves.toHaveProperty("changes", 1)
+            // should not exist
+            await expect(db.get("SELECT * FROM People WHERE firstname = ?", ["John"])).resolves.toBeUndefined()
+            // roll back transaction
+            await expect(db.rollbackTransaction()).resolves.toBeUndefined()
+            // should exist again
+            await expect(db.get("SELECT * FROM People WHERE firstname = ?", ["John"])).resolves.not.toBeUndefined()
+            // delete again
+            // commit transaction
+            //should not exist
+        })
+
+        test("transaction commit", async () => {
+            // create transaction
+            await expect(db.startTransaction()).resolves.toBeUndefined()
+            //delete in transaction
+            await expect(db.run("DELETE FROM People WHERE firstname = ?;", ["John"])).resolves.toHaveProperty("changes", 1)
+            // should not exist
+            await expect(db.get("SELECT * FROM People WHERE firstname = ?", ["John"])).resolves.toBeUndefined()
+            // commit transaction
+            await expect(db.commitTransaction()).resolves.toBeUndefined()
+            //should not exist
+            await expect(db.get("SELECT * FROM People WHERE firstname = ?", ["John"])).resolves.toBeUndefined()
+        })
+
+        test("nestedTransactionsFail", async () => {
+            await expect(db.startTransaction()).resolves.toBeUndefined()
+            await expect(db.startTransaction()).rejects.toThrowError()
+            await expect(db.rollbackTransaction()).resolves.toBeUndefined()
         })
     })
 })
