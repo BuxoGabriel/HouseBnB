@@ -1,10 +1,10 @@
 type Conversation = {
-    id: number,
+    id?: number,
     // inquirer id
     iid: number,
     // host id
     hid: number
-    created: Date
+    created?: Date
 }
 
 export default Conversation

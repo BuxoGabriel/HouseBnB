@@ -111,34 +111,34 @@ export interface MessageDao {
      * @param {number} cid the id of the conversation that you would like to delete
      * @returns A promise if it is successfull or rejects to an error if an unexpected error occurs
      */
-    deleteConversation(cid: number): Promise<void>
+    deleteConversation(cid: number): Promise<Conversation | undefined>
 
     /**
      * Gets 20 messages in a conversation by its id. Returns less if there is less that 20 messages.
      * 
      * @param {number} cid the id of the conversation you would like to fetch
      * @param {number} page 0 indexed what group of 20 messages you would like from newest to oldest
-     * @returns {Promise<Message[] | undefined>} a promise that resolves to an array of 20 messages from the database
+     * @returns {Promise<Message[]>} a promise that resolves to an array of 20 messages from the database
      * or undefined if there is no conversation with the provided cid or rejects with an error if an unexpected error is encountered
      */
-    getConversation(cid: number, page: number): Promise<Message[] | undefined>
+    getConversation(cid: number, page: number): Promise<Message[]>
 
     /**
      * Gets all conversations that a user is engaged in sorted by last message date
      * 
      * @param {number} uid the id of the inquiring user
-     * @returns {Promise<Conversation[] | undefined>} a promise that resolves to an array of conversations or undefined if the user is not
+     * @returns {Promise<Conversation[]>} a promise that resolves to an array of conversations or undefined if the user is not
      * engaged in any conversations. Also rejects to an error if an unexpected error is encountered
      */
-    getUserConversations(uid: number): Promise<Conversation[] | undefined>
+    getUserConversations(uid: number): Promise<Conversation[]>
 
     /**
      * Gets all conversations that have been started by users inquiring about you as a host sorted by last message date
      * 
      * @param {number} hostid the id of the host looking for conversations
-     * @returns {Promise<Conversation[] | undefined>} a promise that resolves to an array of conversations or undefined if the host has no inquirers
+     * @returns {Promise<Conversation[]>} a promise that resolves to an array of conversations or undefined if the host has no inquirers
      */
-    getHostConversations(hostid: number): Promise<Conversation[] | undefined>
+    getHostConversations(hostid: number): Promise<Conversation[]>
     
     /**
      * Sends a messege from one user to another without checking if a conversation exists first. Generates the time of sending inside before storage.

@@ -25,7 +25,8 @@ export default class SQLiteMessageDao implements MessageDao {
                 hid INTEGER NOT NULL,
                 created DATE NOT NULL DEFAULT (DATETIME('now')),
                 FOREIGN KEY(iid) REFERENCES Users(id) ON DELETE CASCADE,
-                FOREIGN KEY(hid) REFERENCES Users(id) ON DELETE CASCADE
+                FOREIGN KEY(hid) REFERENCES Users(id) ON DELETE CASCADE,
+                CONSTRAINT unq_conv UNIQUE (iid, hid)
                 );`, [])
                 .then(val => {
                     return this.db.run(`CREATE TABLE IF NOT EXISTS Messages(
@@ -53,7 +54,7 @@ export default class SQLiteMessageDao implements MessageDao {
         return new Promise((res, rej) => {
             this.db.run(`INSERT INTO Conversations(iid, hid) VALUES (?, ?)`, [iid, hid])
             .then(val => {
-                return this.db.get<Conversation>("SELECT * FROM CONVERSATIONS WHERE id = ", [val.lastID])
+                return this.db.get<Conversation>("SELECT * FROM CONVERSATIONS WHERE id = ?", [val.lastID])
             })
             .then((convo) => {
                 if(!convo) return rej(new Error("Could not create conversation"))
@@ -66,11 +67,16 @@ export default class SQLiteMessageDao implements MessageDao {
     /**
      * @inheritdoc
      */
-    deleteConversation(cid: number): Promise<void> {
+    deleteConversation(cid: number): Promise<Conversation | undefined> {
         return new Promise((res, rej) => {
-            // cascade in msgs should automatically take care of all messeges
-            this.db.run(`DELETE FROM Conversations WHERE id = ?`, [cid])
-                .then(val => res())
+            this.db.get<Conversation>("SELECT * FROM Conversations WHERE id = ?", [cid])
+                .then(convo => {
+                    if(!convo) return res(undefined)
+                    // cascade in msgs should automatically take care of all messeges
+                    return this.db.run(`DELETE FROM Conversations WHERE id = ?`, [cid])
+                        .then(val => res(convo))
+                        .catch(err => rej(err))
+                })
                 .catch(err => rej(err))
         })
     }
@@ -78,23 +84,23 @@ export default class SQLiteMessageDao implements MessageDao {
     /**
      * @inheritdoc
      */
-    getConversation(cid: number, page: number): Promise<Message[] | undefined> {
+    getConversation(cid: number, page: number): Promise<Message[]> {
         let offset = page * PAGE_SIZE
-        return this.db.getAll<Message>(`SELECT * FROM Messages WHERE cid = ? ORDER BY timesent LIMIT ? OFFSET ?`,
+        return this.db.getAll<Message>(`SELECT * FROM Messages WHERE cid = ? ORDER BY created LIMIT ? OFFSET ?`,
             [cid, PAGE_SIZE, offset])
     }
 
     /**
      * @inheritdoc
      */
-    getUserConversations(uid: number): Promise<Conversation[] | undefined> {
+    getUserConversations(uid: number): Promise<Conversation[]> {
         return this.db.getAll<Conversation>(`SELECT * FROM Conversations WHERE iid = ?`, [uid])
     }
 
     /**
      * @inheritdoc
      */
-    getHostConversations(hostid: number): Promise<Conversation[] | undefined> {
+    getHostConversations(hostid: number): Promise<Conversation[]> {
         return this.db.getAll<Conversation>(`SELECT * FROM Conversations WHERE hid = ?`, [hostid])
     }
 
@@ -102,9 +108,9 @@ export default class SQLiteMessageDao implements MessageDao {
      * @inheritdoc
      */
     createMessage(cid: number, fromid: number, toid: number, text: string): Promise<Message> {
-        let msg: Message = {cid, fromid, toid, text, timesent: new Date()}
+        let msg: Message = {cid, fromid, toid, text, created: new Date()}
         return new Promise((res, rej) => {
-            this.db.run(`INSERT INTO Messeges(cid, fromid, toid, text, timesent) VALUES (?, ?, ?, ?, ?)`, [cid, fromid, toid, text, msg.timesent])
+            this.db.run(`INSERT INTO Messeges(cid, fromid, toid, text, created) VALUES (?, ?, ?, ?, ?)`, [cid, fromid, toid, text, msg.created])
             .then(val => {
                 msg.id = val.lastID
                 return res(msg)

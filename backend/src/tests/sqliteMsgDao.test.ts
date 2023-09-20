@@ -20,14 +20,14 @@ describe("SQLiteMsgDao", () => {
     afterAll(async () => await db.teardown())
 
     test("init", async () => {
-        const MsgDao = new SQLiteMessageDao(db)
+        const msgDao = new SQLiteMessageDao(db)
 
-        await expect(MsgDao.init()).resolves.toBeUndefined()
+        await expect(msgDao.init()).resolves.toBeUndefined()
     })
 
     describe("functions", () => {
         const userDao = new SQLiteUserDao(db)
-        const MsgDao = new SQLiteMessageDao(db)
+        const msgDao = new SQLiteMessageDao(db)
         let larry: User = {
             firstname: "larry",
             lastname: "smith",
@@ -45,53 +45,70 @@ describe("SQLiteMsgDao", () => {
             registerDate: new Date()
         }
 
+        let convo: Conversation
+
         beforeEach(async () => {
             // Set up UserDao bc msg table depends on user table
             await userDao.init()
-            await MsgDao.init()
-            // Create dummy users
-            larry = await userDao.createUser(larry)
-            dave = await userDao.createUser(dave)
-
-            const convo: Conversation = {
-                id: 0,
-                iid: larry.id!,
-                hid: dave.id!,
-                created: new Date()
-            }
-
-            const msg1: Message = {
-                cid: convo.id,
-                fromid: larry.id!,
-                toid: dave.id!,
-                text: "Hi Dave!"
-            }
-    
-            const msg2: Message = {
-                cid: convo.id,
-                fromid: dave.id!,
-                toid: larry.id!,
-                text: "Hello Larry!"
-            }
-
-            // create conversation between users
-            await db.run("INSERT INTO Conversations(id, iid, hid, created) VALUES (?, ?, ?, ?);",
-                [convo.id, convo.iid, convo.hid, convo.created])
-            // send a message from each user in the conversation
-            await db.run("INSERT INTO Messages(cid, fromid, toid, text) VALUES (?, ?, ?, ?);",
-                [msg1.cid, msg1.fromid, msg1.toid, msg1.text])
-            await db.run("INSERT INTO Messages(cid, fromid, toid, text) VALUES (?, ?, ?, ?);",
-                [msg2.cid, msg2.fromid, msg2.toid, msg2.text])
+            await msgDao.init()
+            try {
+                // Create dummy users
+                larry = await userDao.createUser(larry)
+                dave = await userDao.createUser(dave)
+                // create conversation between users
+                convo = await msgDao.createConversation(larry.id!, dave.id!)
+                expect(convo).toHaveProperty("id")
+            } catch (err) { }
         })
 
-        afterEach(async () => {
-            // Deletes the users from the database which should cascade to conversations and msgs
-            await userDao.deleteUser(larry.id!)
-            await userDao.deleteUser(dave.id!)
+        test("getUserConversations", async () => {
+            // try to retrieve conversation
+            let convos = await msgDao.getUserConversations(convo.iid)
+            expect(convos).not.toBeUndefined()
+            expect(convos).toHaveProperty("length", 1)
         })
 
-        test("createConvo", () => {
+        test("getHostConversations", async () => {
+            // try to retrieve conversation
+            let convos = await msgDao.getUserConversations(convo.iid!)
+            expect(convos).not.toBeUndefined()
+            expect(convos).toHaveProperty("length", 1)
+        })
+
+        test("deleteConvo", async () => {
+            let conv = await db.get<Conversation>("SELECT * FROM Conversations WHERE iid = ? AND hid = ?", [convo.iid, convo.hid])
+            expect(conv).not.toBeUndefined()
+            await expect(msgDao.deleteConversation(conv!.id!)).resolves.toHaveProperty("id")
+        })
+
+        test("deleteNonExistantConvo", async () => {
+            await expect(msgDao.deleteConversation(-1)).resolves.toBeUndefined()
+        })
+
+        test("getEmptyUserConversations", async () => {
+            let convos = await msgDao.getUserConversations(-1)
+            expect(convos).not.toBeUndefined()
+            expect(convos).toStrictEqual([])
+        })
+
+
+        test("getEmptyUserConversations", async () => {
+            let convos = await msgDao.getHostConversations(-1)
+            expect(convos).not.toBeUndefined()
+            expect(convos).toStrictEqual([])
+        })
+
+        test("getEmptyConversation", async () => {
+            //get convo which should be empty
+            let conv: any = await msgDao.getUserConversations(larry.id!)
+            conv = conv[0]
+            const msgs = await msgDao.getConversation(convo.id!, 0)
+            expect(msgs).toStrictEqual([])
+        })
+
+        test("getConversation", () => {
 
         })
+
     })
 })

@@ -3,7 +3,7 @@ import fs from "fs"
 import { dbI } from "./daoInterface";
 
 // Set database based on runtime enviroment to prevent data contamination
-const DB_LOCATION = process.env.NODE_ENV == 'test'? '/database/housebnb.test.db': process.env.DB_LOCATION || '/database/housebnb.db'
+const DB_LOCATION = process.env.NODE_ENV == 'test' ? '/database/housebnb.test.db' : process.env.DB_LOCATION || '/database/housebnb.db'
 
 /**
  * SQLiteDB sets up and wraps the sqlite3 Database to match the dbI interface
@@ -29,19 +29,19 @@ export default class SQLiteDB implements dbI {
         return new Promise((res, rej) => {
             if (this.db) return rej(new Error("Database already exists"))
 
-            const dirName = require('path').dirname(this.location)
-            if (!fs.existsSync(dirName)) {
-                console.log("database file does not exist, creating...")
-                fs.mkdirSync(dirName, { recursive: true })
-            }
+                const dirName = require('path').dirname(this.location)
+                if (!fs.existsSync(dirName)) {
+                    console.log("database file does not exist, creating...")
+                    fs.mkdirSync(dirName, { recursive: true })
+                }
 
-            this.db = new sqlite3.Database(DB_LOCATION, (err) => {
-                if (err) return rej(err)
-                console.log("database initialized!")
-                res()
+                this.db = new sqlite3.Database(this.location, (err) => {
+                    if (err) return rej(err)
+                    console.log("database initialized!")
+                    res()
+                })
             })
-        })
-    }
+            }
 
     /**
      * @inheritdoc
@@ -108,7 +108,7 @@ export default class SQLiteDB implements dbI {
      * Each result is in the form of an object with a key for each column of the table.
      * Also can reject with an error if it is provided invalid sql.
      */
-    getAll<T>(query: string, params: any): Promise<T[] | undefined> {
+    getAll<T>(query: string, params: any): Promise<T[]> {
         return new Promise((res, rej) => {
             if (!this.db) return rej("Database does not exist")
             this.db.all(query, params, (err, rows: T[]) => {

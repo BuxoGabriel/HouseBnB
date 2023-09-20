@@ -6,7 +6,7 @@ type Message = {
     toid: number,
     text: string,
     visible?: boolean,
-    timesent?: Date
+    created?: Date
 }
 
 export default Message

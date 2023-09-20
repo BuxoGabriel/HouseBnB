@@ -5,18 +5,18 @@ import * as fs from "fs"
 describe("SQLiteDB", () => {
     const logSpy = jest.spyOn(console, "log")
     const testDBLoc = "/database/housebnb.test.db"
-    if(fs.existsSync(testDBLoc)) {
-        console.log("testdb already exists!")
-        fs.writeFileSync(testDBLoc, "")
-        console.log("wiped test db!")
-    }
+        if(fs.existsSync(testDBLoc)) {
+            console.log("testdb already exists!")
+            fs.writeFileSync(testDBLoc, "")
+            console.log("wiped test db!")
+        }
 
     test("initializes and prints", async () => {
         const db = new SQLiteDB()
 
         await expect(db.init()).resolves.toBe(undefined)
         expect(logSpy).toHaveBeenCalledWith("database initialized!")
-    })
+        })
 
     test("second init throws error", async () => {
         const db = new SQLiteDB()
@@ -37,7 +37,7 @@ describe("SQLiteDB", () => {
         const db = new SQLiteDB()
         beforeAll(async () => await db.init())
         beforeEach(async () => {
-            await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", [])
+                        await db.run("CREATE TABLE IF NOT EXISTS People(firstname VARCHAR(16), lastname VARCHAR(16))", [])
             await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["Gabriel", "Buxo"])
             await db.run("INSERT INTO People(firstname, lastname) VALUES(?, ?)", ["John", "Doe"])
         })
