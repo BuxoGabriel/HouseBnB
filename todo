@@ -9,6 +9,7 @@
 - Change DAO paradigm to return undefined on updates if it can not find the original item
 - Test Cascade
 - Implement rollback transactions for testing
+- Turn concurrency lock into its own published npm module
 
 ## Frontend
 

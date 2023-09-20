@@ -1,6 +1,7 @@
 import sqlite3, { Database, RunResult } from "sqlite3"
 import fs from "fs"
 import { dbI } from "./daoInterface";
+import Lock from "../utils/locking";
 
 // Set database based on runtime enviroment to prevent data contamination
 const DB_LOCATION = process.env.NODE_ENV == 'test' ? '/database/housebnb.test.db' : process.env.DB_LOCATION || '/database/housebnb.db'
@@ -12,14 +13,17 @@ export default class SQLiteDB implements dbI {
     // The location of the database
     private location: string
     // sqlite3 Databsae
-    private db?: Database;
+    private db?: Database
+    // static so lock is shared across multiple concurrent tests. Should not be multiple dbs at the same time anyway
+    static lock: Lock = new Lock()
     /**
      * Initializes SQLiteDB object but does not initialize the database.
      * For that call this.init() and await
      */
     constructor() {
         this.location = DB_LOCATION
-        this.db;
+        SQLiteDB.lock = new Lock()
+        this.db
     }
 
     /**
@@ -61,11 +65,17 @@ export default class SQLiteDB implements dbI {
 
     /**
      * Begins a transaction. This transaction can be completed with commitTransaction or it can be rolled back with rollbackTransaction
+     * Make sure that every transaction that starts is completed or rolled back. If one transaction is in progress All other transactions will halt
      * @returns A promise that resolves when the method is done setting up the transaction
      * @throws An error if there is aleady a transaction since they can not be nested
      */
     startTransaction(): Promise<void> {
         return new Promise((res, rej) => {
+            if(SQLiteDB.lock.isLocked()) {
+                return SQLiteDB.lock.wait()
+                    .then(() => this.startTransaction())
+            }
+            SQLiteDB.lock.lock()
             if (!this.db) rej(new Error("Database does not exist!"))
             this.db!.run("BEGIN TRANSACTION;", (err) => { 
                 if (err) return rej(err)
@@ -84,7 +94,10 @@ export default class SQLiteDB implements dbI {
             if (!this.db) rej(new Error("Database does not exist!"))
             this.db!.run("ROLLBACK TRANSACTION;", (err) => {
                 if(err) return rej(err)
-                else return res()
+                else {
+                    SQLiteDB.lock.unlock()
+                    return res()
+                }
             })
         })
     };
@@ -99,7 +112,10 @@ export default class SQLiteDB implements dbI {
             if (!this.db) rej(new Error("Database does not exist!"))
             this.db!.run("COMMIT TRANSACTION;", (err) => {
                 if(err) return rej(err)
-                else return res()
+                else {
+                    SQLiteDB.lock.unlock()
+                    return res()
+                }
             })
         })
     };

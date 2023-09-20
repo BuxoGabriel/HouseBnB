@@ -1,4 +1,3 @@
-import * as fs from "fs"
 import SQLiteDB from "../persistence/sqlite"
 import SQLiteMessageDao from "../persistence/sqliteMsgDao"
 import Conversation from "../model/conversation"
@@ -12,8 +11,6 @@ describe("SQLiteMsgDao", () => {
 
     beforeAll(async () => await db.init())
     afterAll(async () => await db.teardown())
-    beforeEach(async () => await db.startTransaction())
-    afterEach(async () => await db.rollbackTransaction())
 
     test("init", async () => {
         const msgDao = new SQLiteMessageDao(db)
@@ -47,15 +44,15 @@ describe("SQLiteMsgDao", () => {
             // Set up UserDao bc msg table depends on user table
             await userDao.init()
             await msgDao.init()
-            try {
-                // Create dummy users
-                larry = await userDao.createUser(larry)
-                dave = await userDao.createUser(dave)
-                // create conversation between users
-                convo = await msgDao.createConversation(larry.id!, dave.id!)
-                expect(convo).toHaveProperty("id")
-            } catch (err) { }
+            await db.startTransaction()
+            // Create dummy users
+            larry = await userDao.createUser(larry)
+            dave = await userDao.createUser(dave)
+            // create conversation between users
+            convo = await msgDao.createConversation(larry.id!, dave.id!)
+            expect(convo).toHaveProperty("id")
         })
+        afterEach(async () => await db.rollbackTransaction())
 
         test("getUserConversations", async () => {
             // try to retrieve conversation

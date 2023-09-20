@@ -92,9 +92,6 @@ describe("SQLiteDB", () => {
             await expect(db.rollbackTransaction()).resolves.toBeUndefined()
             // should exist again
             await expect(db.get("SELECT * FROM People WHERE firstname = ?", ["John"])).resolves.not.toBeUndefined()
-            // delete again
-            // commit transaction
-            //should not exist
         })
 
         test("transaction commit", async () => {
@@ -108,12 +105,6 @@ describe("SQLiteDB", () => {
             await expect(db.commitTransaction()).resolves.toBeUndefined()
             //should not exist
             await expect(db.get("SELECT * FROM People WHERE firstname = ?", ["John"])).resolves.toBeUndefined()
-        })
-
-        test("nestedTransactionsFail", async () => {
-            await expect(db.startTransaction()).resolves.toBeUndefined()
-            await expect(db.startTransaction()).rejects.toThrowError()
-            await expect(db.rollbackTransaction()).resolves.toBeUndefined()
         })
     })
 })

@@ -7,8 +7,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "start": "node build",
-    "test": "jest --silent",
-    "test-coverage": "jest --coverage --silent",
+    "test": "jest --silent --runInBand",
+    "test-coverage": "jest --coverage --silent --runInBand",
     "dev": "concurrently \"npx tsc --project tsconfig.build.json --watch\" \"nodemon -q build\""
   },
   "devDependencies": {
