@@ -5,16 +5,13 @@ import User from "../model/user"
 
 describe("SQLiteUserDao", () => {
     const logSpy = jest.spyOn(console, "log")
-    const testDBLoc = "/database/housebnb.test.db"
-    if (fs.existsSync(testDBLoc)) {
-        console.log("testdb already exists!")
-        fs.writeFileSync(testDBLoc, "")
-        console.log("wiped test db!")
-    }
+
     const db = new SQLiteDB()
 
     beforeAll(async () => await db.init())
     afterAll(async () => await db.teardown())
+    beforeEach(async () => await db.startTransaction())
+    afterEach(async () => await db.rollbackTransaction())
 
 
     test("init", async () => {
@@ -63,34 +60,12 @@ describe("SQLiteUserDao", () => {
             expect(joe).not.toBeUndefined()
             expect(joe.id).not.toBeUndefined()
             await expect(userDao.getUser(joe.id!)).resolves.not.toBe(undefined)
-        })
-
-        test("createDupUsername", async () => {
-            let joe: User = {
-                firstname: "Joseph",
-                lastname: "Smithson",
-                username: "user2",
-                email: "joeseph@mail.com",
-                password: "password",
-                registerDate: new Date(),
-                id: undefined
-            }
+            // creating a duplicate user should break unique constraint on username
+            await expect(userDao.createUser(joe)).rejects.toThrowError()
+            // joe should still break unique constraint on email
+            joe.username = "newUsername"
             await expect(userDao.createUser(joe)).rejects.toThrowError()
         })
-
-        test("createDupEmail", async () => {
-            let joe: User = {
-                firstname: "Josephine",
-                lastname: "Smithsonian",
-                username: "user3",
-                email: "joe@mail.com",
-                password: "password",
-                registerDate: new Date(),
-                id: undefined
-            }
-            await expect(userDao.createUser(joe)).rejects.toThrowError()
-        })
-
         test("updateUser", async () => {
             let b = await userDao.getUser(billy.id!)
             expect(b).not.toBeUndefined()
@@ -102,7 +77,6 @@ describe("SQLiteUserDao", () => {
         })
 
         test("updateUserInvalid", async () => {
-            // user2 with email joe@mail.com already exists so updating billy like this should break the unique properties
             let joe: User = {
                 firstname: "Joe",
                 lastname: "Smith",
@@ -110,8 +84,10 @@ describe("SQLiteUserDao", () => {
                 email: "joe@mail.com",
                 password: "password",
                 registerDate: new Date(),
-                id: billy.id
             }
+            joe = await userDao.createUser(joe)
+            // trying to update user to have a taken email should violate unique property and fail
+            joe.email = billy.email
             await expect(userDao.updateUser(joe)).rejects.toThrowError()
         })
 
