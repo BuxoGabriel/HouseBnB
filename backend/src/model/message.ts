@@ -5,7 +5,6 @@ type Message = {
     fromid: number,
     toid: number,
     text: string,
-    visible?: boolean,
     created?: Date
 }
 

@@ -34,7 +34,6 @@ export default class SQLiteMessageDao implements MessageDao {
                         cid INTEGER NOT NULL,
                         fromid INTEGER NOT NULL,
                         toid INTEGER NOT NULL,
-                        visible INTEGER NOT NULL DEFAULT TRUE,
                         created DATE NOT NULL DEFAULT (DATETIME('now')),
                         text TEXT NOT NULL,
                         FOREIGN KEY(cid) REFERENCES Conversations(id) ON DELETE CASCADE,
@@ -110,9 +109,9 @@ export default class SQLiteMessageDao implements MessageDao {
     createMessage(cid: number, fromid: number, toid: number, text: string): Promise<Message> {
         let msg: Message = {cid, fromid, toid, text, created: new Date()}
         return new Promise((res, rej) => {
-            this.db.run(`INSERT INTO Messeges(cid, fromid, toid, text, created) VALUES (?, ?, ?, ?, ?)`, [cid, fromid, toid, text, msg.created])
-            .then(val => {
-                msg.id = val.lastID
+            this.db.run(`INSERT INTO Messages(cid, fromid, toid, text, created) VALUES (?, ?, ?, ?, ?)`, [cid, fromid, toid, text, msg.created])
+            .then(runRes => {
+                msg.id = runRes.lastID
                 return res(msg)
             })
             .catch(err => rej(err))
@@ -138,16 +137,10 @@ export default class SQLiteMessageDao implements MessageDao {
     /**
      * @inheritdoc
      */
-    hideMessege(mid: number): Promise<Message | undefined> {
+    deleteMessage(mid: number): Promise<void> {
         return new Promise((res, rej) => {
-            this.db.get<Message>(`SELECT * FROM Messages WHERE id = ?`, [mid])
-                .then(msg => {
-                    if(!msg) return res(undefined)
-                    return this.db.run(`UPDATE Messages SET visible = ? WHERE id = ?`, [false, mid])
-                        .then(val => this.db.get<Message>(`SELECT * FROM Messages WHERE id = ?`, [mid]))
-                        .then(updatedMsg => res(updatedMsg))
-                })
-                .catch(err => rej(err))
+            return this.db.run(`DELETE FROM Messages WHERE id = ?`, [mid])
+                .then(val => res())
         })
     }
 }

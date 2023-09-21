@@ -162,13 +162,13 @@ export interface MessageDao {
     editMessage(mid: number, newText: string): Promise<Message | undefined>
 
     /**
-     * Hides a message from both parties in the conversation
+     * Deletes a msg from the database
      * 
-     * @param {number} mid the id of the message that you would like to hide
-     * @returns A promise that resolves to the updated message on success.
-     * Also resolves to undefined if the message can not be found or rejects to an error if an unexpected error occurs
+     * @param {number} mid the id of the message that you would like to delete
+     * @returns A promise that resolves once the delete operation is complete.
+     * Also rejects to an error if an unexpected error occurs
      */
-    hideMessege(mid: number): Promise<Message | undefined>
+    deleteMessage(mid: number): Promise<void>
 }
 
 export interface BookingDao {
