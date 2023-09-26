@@ -4,7 +4,12 @@ import { dbI } from "./daoInterface";
 import Lock from "@buxogabe/conclock";
 
 // Set database based on runtime enviroment to prevent data contamination
-const DB_LOCATION = process.env.NODE_ENV == 'test' ? '/database/housebnb.test.db' : process.env.DB_LOCATION || '/database/housebnb.db'
+let DB_LOCATION: string;
+if(process.env.DB_LOCATION) DB_LOCATION = process.env.DB_LOCATION
+else if(process.env.NODE_ENV == 'test') DB_LOCATION = '/database/housebnb.test.db'
+else if(process.env.NODE_ENV == 'dev') DB_LOCATION = '/database/housebnb.dev.db'
+else if(process.env.NODE_ENV == 'production') '/database/housebnb.prod.db'
+else throw new Error("NODE_ENV must be test, dev, or production")
 
 /**
  * SQLiteDB sets up and wraps the sqlite3 Database to match the dbI interface
