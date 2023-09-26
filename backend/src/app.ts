@@ -1,38 +1,26 @@
 import express, { Router } from "express"
 import logger from "morgan"
-
-import { UserDao } from "./persistence/daoInterface"
-import SQLiteDB from "./persistence/sqlite"
-import SQLiteUserDao from "./persistence/sqliteUserDao"
 import getUserRouter from "./controllers/userController"
+import { UserDao, dbI } from "./persistence/daoInterface"
 
-const app = express()
+export default function makeApp(db: dbI, userDao: UserDao) {
+    const app = express()
     
-// set up DAO
-const db = new SQLiteDB()
-const userDao: UserDao = new SQLiteUserDao(db)
-
-db.init()
-    .then(() => userDao.init())
-    .catch((err) => {
-        console.error(err)
-        process.exit(1)
-})
-
-const userRouter: Router = getUserRouter(userDao)
-
-app.use('/user', userRouter)
-app.use(logger('dev'))
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+    const userRouter: Router = getUserRouter(userDao)
+    
+    app.use('/user', userRouter)
+    app.use(logger('dev'))
+    app.use(express.json())
+    app.use(express.urlencoded({ extended: false }))
+    
+    return {app, gracefulShutdown: () => gracefulShutdown(db)}
+}
 
 /**
  * closes the db connection as expected
  */
-function gracefulShutdown() {
+function gracefulShutdown(db: dbI) {
     db.teardown()
         .catch(() => { })
         .then(() => process.exit());
 }
-
-export {app, gracefulShutdown}
