@@ -26,14 +26,15 @@ describe("SQLiteUserDao", () => {
             lastname: "Bob",
             username: "user1",
             email: "billybob@mail.com",
+            salt: "salty",
             password: "password",
-            registerDate: new Date(),
+            registerdate: new Date(),
             id: 0
         }
         beforeEach(async () => {
             await userDao.init()
-            await expect(db.run("INSERT INTO Users(id, firstname, lastname, email, username, password, registerDate) VALUES (?, ?, ?, ?, ?, ?, ?);",
-                [billy.id, billy.firstname, billy.lastname, billy.email, billy.username, billy.password, billy.registerDate])).resolves.toHaveProperty("changes", 1)
+            await expect(db.run("INSERT INTO Users(id, firstname, lastname, email, username, password, salt, registerdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                [billy.id, billy.firstname, billy.lastname, billy.email, billy.username, billy.password, billy.salt, billy.registerdate])).resolves.toHaveProperty("changes", 1)
         })
         afterEach(async () => {
             await expect(db.run("DELETE FROM Users WHERE id = 0", [])).resolves.toHaveProperty("changes", 1)
@@ -53,7 +54,8 @@ describe("SQLiteUserDao", () => {
                 username: "user2",
                 email: "joe@mail.com",
                 password: "password",
-                registerDate: new Date(),
+                salt: "salty",
+                registerdate: new Date(),
                 id: undefined
             }
             joe = await userDao.createUser(joe)
@@ -83,7 +85,8 @@ describe("SQLiteUserDao", () => {
                 username: "user2",
                 email: "joe@mail.com",
                 password: "password",
-                registerDate: new Date(),
+                salt: "salty",
+                registerdate: new Date(),
             }
             joe = await userDao.createUser(joe)
             // trying to update user to have a taken email should violate unique property and fail
@@ -98,7 +101,8 @@ describe("SQLiteUserDao", () => {
                 username: "user3",
                 email: "josh@mail.com",
                 password: "password",
-                registerDate: new Date(),
+                salt: "salty",
+                registerdate: new Date(),
                 id: undefined
             }
             josh = await userDao.createUser(josh)

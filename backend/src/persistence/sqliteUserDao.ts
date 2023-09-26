@@ -30,8 +30,9 @@ export default class SQLiteUserDao implements UserDao {
                     lastname VARCHAR(32) NOT NULL,
                     email VARCHAR(32) UNIQUE NOT NULL,
                     username VARCHAR(32) UNIQUE NOT NULL,
-                    password VARCHAR(32) NOT NULL,
-                    registerDate DATE);`,
+                    password VARCHAR(60) NOT NULL,
+                    salt VARCHAR(40) NOT NULL,
+                    registerdate DATE NOT NULL DEFAULT (DATETIME('now')));`,
                 [])
                 .then(val => {
                     console.log("Users table initialized")
@@ -46,7 +47,14 @@ export default class SQLiteUserDao implements UserDao {
      * @inheritdoc
      */
     getUser(id: number): Promise<User | undefined> {
-        return this.sqlDB.get("SELECT * FROM Users WHERE id = ?;", [id])
+        return new Promise((res, rej) => {
+            this.sqlDB.get<User>("SELECT id, firstname, lastname, email, username, registerDate FROM Users WHERE id = ?;", [id])
+                .then(user => {
+                    if(user) user.registerdate = new Date(user.registerdate)
+                    return res(user)
+                })
+                .catch(err => rej(err))
+        })
     }
 
     /**
@@ -54,8 +62,8 @@ export default class SQLiteUserDao implements UserDao {
      */
     createUser(user: User): Promise<User> {
         return new Promise((res, rej) => {
-            this.sqlDB.run("INSERT INTO Users(firstname, lastname, email, username, password, registerDate) VALUES (?, ?, ?, ?, ?, ?);", 
-                [user.firstname, user.lastname, user.email, user.username, user.password, user.registerDate])
+            this.sqlDB.run("INSERT INTO Users(firstname, lastname, email, username, password, salt, registerdate) VALUES (?, ?, ?, ?, ?, ?, ?);", 
+                [user.firstname, user.lastname, user.email, user.username, user.password, user.salt, user.registerdate])
                 .then(runRes => {
                     user.id = runRes.lastID
                     res(user)

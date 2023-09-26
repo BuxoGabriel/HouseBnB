@@ -2,14 +2,12 @@
 
 ## Backend
 
-- Make User API Route
-- Create DB
-- Work on Dao
 - Change DAO paradigm to not pass in the relevent object whenever possible and to instead have descriptive fields.
-- Change DAO paradigm to return undefined on updates if it can not find the original item
-- Test Cascade
-- Implement rollback transactions for testing
-- Turn concurrency lock into its own published npm module
+- use json web tokens(JWT) for tracking user auth
+- require auth for http requests
+- add tests for userController
+- work on msgController
+- make auth middleware to verify permisions
 
 ## Frontend
 

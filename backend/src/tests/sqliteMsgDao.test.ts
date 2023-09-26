@@ -27,16 +27,18 @@ describe("SQLiteMsgDao", () => {
             lastname: "smith",
             username: "lar21",
             password: "password",
+            salt: "salty",
             email: "lar@mail.com",
-            registerDate: new Date()
+            registerdate: new Date()
         }
         let dave: User = {
             firstname: "dave",
             lastname: "smith",
             username: "dav12",
             password: "password",
+            salt: "salty",
             email: "david@mail.com",
-            registerDate: new Date()
+            registerdate: new Date()
         }
 
         let convo: Conversation

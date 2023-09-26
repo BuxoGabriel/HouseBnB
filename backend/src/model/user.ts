@@ -4,8 +4,9 @@ type User = {
     lastname: string,
     username: string,
     password?: string,
+    salt?: string,
     email: string,
-    registerDate: Date
+    registerdate: Date
 }
 
 export default User
