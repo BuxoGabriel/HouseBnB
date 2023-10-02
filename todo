@@ -8,6 +8,8 @@
 - add tests for userController
 - work on msgController
 - make auth middleware to verify permisions
+- tests for message controller
+- default params for make app config object
 
 ## Frontend
 

@@ -107,10 +107,9 @@ describe("SQLiteMsgDao", () => {
             let msg: Message = {
                 cid: convo.id!,
                 fromid: convo.iid,
-                toid: convo.hid,
                 text: MSGTEXT
             }
-            await expect(msgDao.createMessage(msg.cid, msg.fromid, msg.toid, msg.text)).resolves.toHaveProperty("id")
+            await expect(msgDao.createMessage(msg.cid, msg.fromid, msg.text)).resolves.toHaveProperty("id")
             expect(db.get<Message>("SELECT * FROM Messages WHERE text = ?", [MSGTEXT])).resolves.toBeDefined()
         })
 
@@ -120,18 +119,15 @@ describe("SQLiteMsgDao", () => {
             let msg: Message = {
                 cid: convo.id!,
                 fromid: convo.iid,
-                toid: convo.hid,
                 text: MSGTEXT
             }
-            await expect(msgDao.createMessage(msg.cid, msg.fromid, msg.toid, msg.text)).resolves.toBeDefined()
+            await expect(msgDao.createMessage(msg.cid, msg.fromid, msg.text)).resolves.toBeDefined()
             for(let i = 0; i < 50; i++) {
                 // set up 50 alternating msgs
                 msg.text = String(i)
                 if(msg.fromid == larry.id) msg.fromid = dave.id!
                 else msg.fromid = larry.id!
-                if(msg.toid == larry.id) msg.toid = dave.id!
-                else msg.toid = larry.id!
-                await expect(msgDao.createMessage(msg.cid, msg.fromid, msg.toid, msg.text)).resolves.toBeDefined()
+                await expect(msgDao.createMessage(msg.cid, msg.fromid, msg.text)).resolves.toBeDefined()
             }
             // test get
             let msgs = await msgDao.getConversation(convo.id!, 0)
@@ -146,10 +142,9 @@ describe("SQLiteMsgDao", () => {
             let msg: Message = {
                 cid: convo.id!,
                 fromid: convo.iid,
-                toid: convo.hid,
                 text: MSGTEXT
             }
-            msg = await msgDao.createMessage(msg.cid, msg.fromid, msg.toid, msg.text)
+            msg = await msgDao.createMessage(msg.cid, msg.fromid, msg.text)
             expect(msg).toHaveProperty("text", MSGTEXT)
             // edit the message
             const NEWTEXT = "new text"
@@ -164,10 +159,9 @@ describe("SQLiteMsgDao", () => {
             let msg: Message = {
                 cid: convo.id!,
                 fromid: convo.iid,
-                toid: convo.hid,
                 text: MSGTEXT
             }
-            msg = await msgDao.createMessage(msg.cid, msg.fromid, msg.toid, msg.text)
+            msg = await msgDao.createMessage(msg.cid, msg.fromid, msg.text)
             expect(msgDao.deleteMessage(msg.id!)).resolves.toBeUndefined()
             expect(db.get<Message>("SELECT * FROM Messages WHERE id = ?", [msg.id!])).resolves.toBeUndefined()
         })

@@ -33,12 +33,10 @@ export default class SQLiteMessageDao implements MessageDao {
                         id INTEGER PRIMARY KEY NOT NULL,
                         cid INTEGER NOT NULL,
                         fromid INTEGER NOT NULL,
-                        toid INTEGER NOT NULL,
                         created DATE NOT NULL DEFAULT (DATETIME('now')),
                         text TEXT NOT NULL,
                         FOREIGN KEY(cid) REFERENCES Conversations(id) ON DELETE CASCADE,
-                        FOREIGN KEY(fromid) REFERENCES Users(id),
-                        FOREIGN KEY(toid) REFERENCES Users(id)
+                        FOREIGN KEY(fromid) REFERENCES Users(id)
                         );`, [])
                 })
                 .then(val => res())
@@ -106,10 +104,10 @@ export default class SQLiteMessageDao implements MessageDao {
     /**
      * @inheritdoc
      */
-    createMessage(cid: number, fromid: number, toid: number, text: string): Promise<Message> {
-        let msg: Message = {cid, fromid, toid, text, created: new Date()}
+    createMessage(cid: number, fromid: number, text: string): Promise<Message> {
+        let msg: Message = {cid, fromid, text, created: new Date()}
         return new Promise((res, rej) => {
-            this.db.run(`INSERT INTO Messages(cid, fromid, toid, text, created) VALUES (?, ?, ?, ?, ?)`, [cid, fromid, toid, text, msg.created])
+            this.db.run(`INSERT INTO Messages(cid, fromid, text, created) VALUES (?, ?, ?, ?)`, [cid, fromid, text, msg.created])
             .then(runRes => {
                 msg.id = runRes.lastID
                 return res(msg)

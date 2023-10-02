@@ -1,5 +1,5 @@
 
-import express, { Router, Request, Response } from "express"
+import express, { Router } from "express"
 import asyncHandler from "express-async-handler"
 import { body, validationResult } from "express-validator"
 import * as bcrypt from "bcrypt"
@@ -32,9 +32,12 @@ class UserController {
     }
 
     userGet = asyncHandler(async (req, res, next) => {
-        let id = Number(req.params.id)
+        let id = parseInt(req.params.id)
         let user = await this.userDao.getUser(id)
-        res.json(user)
+        if(user) res.json(user)
+        else {
+            res.sendStatus(400)
+        }
     })
 
     userPost = [
@@ -62,9 +65,8 @@ class UserController {
         asyncHandler(async (req, res, next) => {
             const errors = validationResult(req)
             if(!errors.isEmpty()) {
-                const error: any = new Error(JSON.stringify(errors))
-                error.status = 400
-                return next(error)
+                res.sendStatus(400)
+                return
             }
             
             try {
@@ -84,15 +86,16 @@ class UserController {
 
                 let newUser = await this.userDao.createUser(user)
                 if(newUser == undefined) {
-                    const error: any = new Error("username or password taken")
-                    return next(error)
+                    res.sendStatus(400)
+                    return
+                } else {
+                    res.send(newUser)
+                    return
                 }
-                else res.send(newUser); return
             }
             catch(err) {
-                const error: any = new Error("Could not create this user")
-                error.status = 400
-                return next(error)
+                res.sendStatus(400)
+                return
             }
         })
     ]
@@ -100,6 +103,7 @@ class UserController {
     userDelete = asyncHandler(async (req, res, next) => {
         let id = Number(req.params.id)
         let user = await this.userDao.deleteUser(id)
-        res.json(user)
+        if(user) res.json(user)
+        else res.sendStatus(400)
     })
 }

@@ -121,7 +121,7 @@ export interface MessageDao {
      * @returns {Promise<Message[]>} a promise that resolves to an array of 20 messages from the database
      * or undefined if there is no conversation with the provided cid or rejects with an error if an unexpected error is encountered
      */
-    getConversation(cid: number, page: number): Promise<Message[]>
+    getConversation(cid: number, page?: number): Promise<Message[]>
 
     /**
      * Gets all conversations that a user is engaged in sorted by last message date
@@ -145,11 +145,10 @@ export interface MessageDao {
      * 
      * @param {number} cid the conversation id
      * @param {number} fromid the sender's id
-     * @param {number} toid the reciever's id
      * @param {string} text the contents of the message
      * @returns A promise that resolves to the sent message if it is successfull and rejects to an error if it is not
      */
-    createMessage(cid: number, fromid: number, toid: number, text: string): Promise<Message>
+    createMessage(cid: number, fromid: number, text: string): Promise<Message>
 
     /**
      * Edits the contents of a messege.
