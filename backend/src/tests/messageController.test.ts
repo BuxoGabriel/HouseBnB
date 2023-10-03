@@ -14,7 +14,7 @@ describe("messageController", () => {
 
     afterEach(async () => await mockMessageDao.clear())
 
-    test("", async () => {
-        const response = await request(app)
+    test("create convo", async () => {
+        const response = await request(app).post("/message/convo")
     })
 })

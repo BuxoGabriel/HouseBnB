@@ -60,7 +60,7 @@ class UserController {
         body("email")
             .trim()
             .isLength({min: 1})
-            .matches(/(([A-Za-z])*(@){1}([a-zA-Z])*(.com){1})/),
+            .escape(),
 
         asyncHandler(async (req, res, next) => {
             const errors = validationResult(req)

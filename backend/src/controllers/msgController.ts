@@ -4,6 +4,7 @@ import { body, validationResult } from "express-validator"
 
 import { MessageDao } from "../persistence/daoInterface";
 import Message from "../model/message";
+import Conversation from "../model/conversation";
 
 export default function getMsgRouter(msgDao: MessageDao): Router {
     const messageController = new MessageController(msgDao)
@@ -13,8 +14,9 @@ export default function getMsgRouter(msgDao: MessageDao): Router {
     messageRouter.put("/", messageController.editMessage)
     messageRouter.delete("/:id", messageController.deleteMessage)
     messageRouter.get("/convo", messageController.getConvo)
+    messageRouter.post("/convo", messageController.postConvo)
     messageRouter.get("/convo/:uid", messageController.getUserConvos)
-    messageRouter.delete("/convo/:id", messageController.deleteConvo)
+    messageRouter.delete("/convo/:cid", messageController.deleteConvo)
     return messageRouter
 }
 
@@ -23,6 +25,40 @@ class MessageController{
     constructor(msgDao: MessageDao) {
         this.msgDao = msgDao
     }
+
+    /**
+     * create a conversation
+     */
+    postConvo = [
+        body("iid")
+            .trim()
+            .isNumeric()
+            .isLength({min: 1})
+            .escape(),
+
+        body("hid")
+            .trim()
+            .isNumeric()
+            .isLength({min: 1})
+            .escape(),
+        
+        asyncHandler(async (req, res, next) => {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {res.sendStatus(400); return}
+            const {iid, hid}: Conversation = req.body
+            if(iid === hid) {res.sendStatus(400); return}
+            try {
+                let convo = await this.msgDao.createConversation(iid, hid)
+                res.json(convo)
+                return
+            }
+            catch(err) {
+                console.error(err)
+                res.sendStatus(500)
+                return
+            }
+        })
+    ]
 
     /**
      * Send a message with < 1000 chars in a conversation
@@ -58,12 +94,16 @@ class MessageController{
             }
 
             try {
+                const convos = await this.msgDao.getUserConversations(message.fromid)
+                if(!convos.some(convo => convo.id == message.cid)) {res.sendStatus(400); return}
                 message = await this.msgDao.createMessage(message.cid!, message.fromid, message.text)
-                res.sendStatus(200)
+                res.json(message)
+                return
             }
             catch(err) {
                 console.error(err)
                 res.sendStatus(500)
+                return
             }
         })
     ]
@@ -102,13 +142,13 @@ class MessageController{
     })
 
     getConvo = asyncHandler(async (req, res, next) => {
-        if(typeof req.query.id !== "string") {res.sendStatus(400); return}
+        if(typeof req.query.cid !== "string") {res.sendStatus(400); return}
         if(typeof req.query.page !== "string") {res.sendStatus(400); return}
-        let id = parseInt(req.query.id)
+        let id = parseInt(req.query.cid)
         let page = parseInt(req.query.page)
         if(isNaN(id) || isNaN(page)) {res.sendStatus(400); return}
         try{
-            let convo = await this.msgDao.getConversation(id)
+            let convo = await this.msgDao.getConversation(id, page)
             res.json(convo)
         }
         catch(err) {
@@ -118,7 +158,7 @@ class MessageController{
     })
 
     getUserConvos = asyncHandler(async (req, res, next) => {
-        let uid = parseInt(req.params.id)
+        let uid = parseInt(req.params.uid)
         if(isNaN(uid)) {res.sendStatus(400); return}
         try{
             let convos = await this.msgDao.getUserConversations(uid)
@@ -129,7 +169,15 @@ class MessageController{
         }
     })
 
-    deleteConvo = asyncHandler((req, res, next) => {
-
+    deleteConvo = asyncHandler(async (req, res, next) => {
+        let cid = parseInt(req.params.cid)
+        if(isNaN(cid)) {res.sendStatus(400); return}
+        try{
+            let convo = await this.msgDao.deleteConversation(cid)
+            if(convo) {res.json(convo)}
+            else {res.sendStatus(400)}
+        } catch(err) {
+            res.sendStatus(500)
+        }
     })
 }

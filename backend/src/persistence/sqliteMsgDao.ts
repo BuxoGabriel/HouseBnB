@@ -81,7 +81,7 @@ export default class SQLiteMessageDao implements MessageDao {
     /**
      * @inheritdoc
      */
-    getConversation(cid: number, page: number): Promise<Message[]> {
+    getConversation(cid: number, page: number = 0): Promise<Message[]> {
         let offset = page * PAGE_SIZE
         return this.db.getAll<Message>(`SELECT * FROM Messages WHERE cid = ? ORDER BY created LIMIT ? OFFSET ?`,
             [cid, PAGE_SIZE, offset])

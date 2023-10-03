@@ -15,6 +15,7 @@ const messageDao: MessageDao = new SQLiteMessageDao(db)
 // initialize the database
 db.init()
 .then(() => userDao.init())
+.then(() => messageDao.init())
 .catch((err) => {
     console.error(err)
     process.exit(1)

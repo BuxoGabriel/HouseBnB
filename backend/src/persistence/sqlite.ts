@@ -46,6 +46,10 @@ export default class SQLiteDB implements dbI {
 
             this.db = new sqlite3.Database(this.location, (err) => {
                 if (err) return rej(err)
+                if(this.db) {
+                    this.db.run("PRAGMA foreign_keys = true;", err => rej(err))
+                    
+                }
                 console.log("database initialized!")
                 res()
             })
