@@ -126,19 +126,11 @@ export interface MessageDao {
     /**
      * Gets all conversations that a user is engaged in sorted by last message date
      * 
-     * @param {number} uid the id of the inquiring user
-     * @returns {Promise<Conversation[]>} a promise that resolves to an array of conversations or undefined if the user is not
-     * engaged in any conversations. Also rejects to an error if an unexpected error is encountered
+     * @param {number} uid the id of the user
+     * @returns {Promise<Conversation[]>} a promise that resolves to an array of conversations.
+     * Also rejects to an error if an unexpected error is encountered
      */
     getUserConversations(uid: number): Promise<Conversation[]>
-
-    /**
-     * Gets all conversations that have been started by users inquiring about you as a host sorted by last message date
-     * 
-     * @param {number} hostid the id of the host looking for conversations
-     * @returns {Promise<Conversation[]>} a promise that resolves to an array of conversations or undefined if the host has no inquirers
-     */
-    getHostConversations(hostid: number): Promise<Conversation[]>
     
     /**
      * Sends a messege from one user to another without checking if a conversation exists first. Generates the time of sending inside before storage.

@@ -87,13 +87,6 @@ describe("SQLiteMsgDao", () => {
             expect(convos).toStrictEqual([])
         })
 
-
-        test("getEmptyUserConversations", async () => {
-            let convos = await msgDao.getHostConversations(-1)
-            expect(convos).not.toBeUndefined()
-            expect(convos).toStrictEqual([])
-        })
-
         test("getEmptyConversation", async () => {
             //get convo which should be empty
             let conv: any = await msgDao.getUserConversations(larry.id!)

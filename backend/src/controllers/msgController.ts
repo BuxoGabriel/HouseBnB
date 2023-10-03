@@ -12,7 +12,8 @@ export default function getMsgRouter(msgDao: MessageDao): Router {
     messageRouter.post("/", messageController.postMessage)
     messageRouter.put("/", messageController.editMessage)
     messageRouter.delete("/:id", messageController.deleteMessage)
-    messageRouter.get("/convo/*", messageController.getConvo)
+    messageRouter.get("/convo", messageController.getConvo)
+    messageRouter.get("/convo/:uid", messageController.getUserConvos)
     messageRouter.delete("/convo/:id", messageController.deleteConvo)
     return messageRouter
 }
@@ -111,6 +112,18 @@ class MessageController{
             res.json(convo)
         }
         catch(err) {
+            console.error(err)
+            res.sendStatus(500)
+        }
+    })
+
+    getUserConvos = asyncHandler(async (req, res, next) => {
+        let uid = parseInt(req.params.id)
+        if(isNaN(uid)) {res.sendStatus(400); return}
+        try{
+            let convos = await this.msgDao.getUserConversations(uid)
+            res.json(convos)
+        } catch(err) {
             console.error(err)
             res.sendStatus(500)
         }

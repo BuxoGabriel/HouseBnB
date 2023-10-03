@@ -91,14 +91,7 @@ export default class SQLiteMessageDao implements MessageDao {
      * @inheritdoc
      */
     getUserConversations(uid: number): Promise<Conversation[]> {
-        return this.db.getAll<Conversation>(`SELECT * FROM Conversations WHERE iid = ?`, [uid])
-    }
-
-    /**
-     * @inheritdoc
-     */
-    getHostConversations(hostid: number): Promise<Conversation[]> {
-        return this.db.getAll<Conversation>(`SELECT * FROM Conversations WHERE hid = ?`, [hostid])
+        return this.db.getAll<Conversation>(`SELECT * FROM Conversations WHERE iid = ? OR hid = ?`, [uid, uid])
     }
 
     /**
